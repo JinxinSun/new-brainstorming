@@ -173,6 +173,59 @@ describe("chatReducer", () => {
       expect(next.currentStage).toBe("generate_solution");
     });
 
+    it("应拒绝非法 prototype_html（非完整 HTML 文档）", () => {
+      const state: ChatState = {
+        ...initialState,
+        isLoading: true,
+        messages: [
+          {
+            id: "a1",
+            role: "assistant",
+            content: "看看这个",
+            isStreaming: true,
+            timestamp: Date.now(),
+          },
+        ],
+      };
+
+      const next = chatReducer(state, {
+        type: "FINISH_ASSISTANT_MESSAGE",
+        id: "a1",
+        toolArgs: {
+          stage: "understand_background",
+          // 对话文字被误塞进 prototype_html
+          prototype_html: "请问您想要做什么？",
+        },
+      });
+
+      expect(next.prototypeHtml).toBeNull();
+    });
+
+    it("应接受 <!DOCTYPE 开头的完整 HTML", () => {
+      const state: ChatState = {
+        ...initialState,
+        isLoading: true,
+        messages: [
+          {
+            id: "a1",
+            role: "assistant",
+            content: "原型",
+            isStreaming: true,
+            timestamp: Date.now(),
+          },
+        ],
+      };
+
+      const html = "<!DOCTYPE html><html lang=\"zh-CN\"><body>原型</body></html>";
+      const next = chatReducer(state, {
+        type: "FINISH_ASSISTANT_MESSAGE",
+        id: "a1",
+        toolArgs: { prototype_html: html },
+      });
+
+      expect(next.prototypeHtml).toBe(html);
+    });
+
     it("不传 prototype_html 时不应覆盖已有原型", () => {
       const existingHtml = "<html><body>旧原型</body></html>";
       const state: ChatState = {

@@ -28,15 +28,17 @@ export function MessageList({
         const isLastAssistant =
           msg.role === "assistant" && index === messages.length - 1;
         const hasChoices = msg.choices && msg.choices.length > 0;
+        // 只在最新一条 AI 消息上渲染 choices，避免历史选项堆积
+        const showChoices = hasChoices && isLastAssistant;
 
         return (
           <div key={msg.id} className="space-y-3">
             <MessageBubble message={msg} />
-            {hasChoices && (
+            {showChoices && (
               <ChoiceCards
                 choices={msg.choices!}
                 onSelect={onChoiceSelect}
-                disabled={!isLastAssistant || isLoading}
+                disabled={isLoading}
               />
             )}
           </div>

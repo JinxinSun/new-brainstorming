@@ -9,6 +9,31 @@ import type {
 } from "@/types";
 import { parseSSEStream } from "@/lib/stream-parser";
 
+// ─── 硬编码开场 ────────────────────────────────────────────
+// 首条 AI 欢迎消息由前端直接渲染，不经过 API。
+// 目的：避免"自动发送'你好'"污染对话历史、气泡误显示。
+
+export const WELCOME_MESSAGE: ChatMessage = {
+  id: "initial-welcome",
+  role: "assistant",
+  content:
+    "欢迎！我是**需求探索师**。\n\n我会通过对话帮你把模糊的想法一步步梳理清楚，过程中会在右侧实时生成原型辅助理解，最终输出一份清晰的需求文档。\n\n**请问您想要做的是？**",
+  choices: [
+    { id: "new", label: "全新的功能或页面" },
+    { id: "improve", label: "改造现有的功能" },
+    { id: "other", label: "其他（请直接描述您的想法）" },
+  ],
+  timestamp: 0,
+  isInitial: true,
+};
+
+// prototype_html 必须是完整 HTML 文档；防止 AI 把对话文字误塞进此字段
+function isValidPrototypeHtml(html: string | undefined): html is string {
+  if (!html) return false;
+  const s = html.trim().toLowerCase();
+  return s.startsWith("<!doctype") || s.startsWith("<html");
+}
+
 // ─── Actions ──────────────────────────────────────────────
 
 type Action =
@@ -80,7 +105,9 @@ export function chatReducer(state: ChatState, action: Action): ChatState {
             : m,
         ),
         currentStage: toolArgs.stage ?? state.currentStage,
-        prototypeHtml: toolArgs.prototype_html ?? state.prototypeHtml,
+        prototypeHtml: isValidPrototypeHtml(toolArgs.prototype_html)
+          ? toolArgs.prototype_html
+          : state.prototypeHtml,
         requirementsSummary:
           toolArgs.requirements_summary ?? state.requirementsSummary,
       };
@@ -105,27 +132,32 @@ export function buildApiMessages(
   role: "user" | "assistant";
   content: string | ContentPart[];
 }> {
-  return messages.map((m) => {
-    if (m.role === "user" && m.imageUrl) {
-      return {
-        role: m.role,
-        content: [
-          { type: "text" as const, text: m.content },
-          {
-            type: "image_url" as const,
-            image_url: { url: m.imageUrl, detail: "high" as const },
-          },
-        ],
-      };
-    }
-    return { role: m.role, content: m.content };
-  });
+  return messages
+    .filter((m) => !m.isInitial)
+    .map((m) => {
+      if (m.role === "user" && m.imageUrl) {
+        return {
+          role: m.role,
+          content: [
+            { type: "text" as const, text: m.content },
+            {
+              type: "image_url" as const,
+              image_url: { url: m.imageUrl, detail: "high" as const },
+            },
+          ],
+        };
+      }
+      return { role: m.role, content: m.content };
+    });
 }
 
 // ─── Hook ─────────────────────────────────────────────────
 
 export function useChat() {
-  const [state, dispatch] = useReducer(chatReducer, initialState);
+  const [state, dispatch] = useReducer(chatReducer, initialState, (s) => ({
+    ...s,
+    messages: [WELCOME_MESSAGE],
+  }));
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const sendMessage = useCallback(

@@ -45,6 +45,8 @@ export interface ChatMessage {
   choices?: Choice[];
   isStreaming?: boolean;
   timestamp: number;
+  // 前端硬编码的开场消息，不发送给 API
+  isInitial?: boolean;
 }
 
 export interface ChatState {

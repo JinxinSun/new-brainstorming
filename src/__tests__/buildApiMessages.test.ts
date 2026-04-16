@@ -90,6 +90,32 @@ describe("buildApiMessages", () => {
     expect(result).toEqual([]);
   });
 
+  it("应过滤掉 isInitial 消息（前端硬编码开场不发 API）", () => {
+    const messages: ChatMessage[] = [
+      {
+        id: "initial-welcome",
+        role: "assistant",
+        content: "欢迎！请问您想要做的是？",
+        isInitial: true,
+        timestamp: 0,
+      },
+      {
+        id: "u1",
+        role: "user",
+        content: "全新的功能或页面",
+        timestamp: Date.now(),
+      },
+    ];
+
+    const result = buildApiMessages(messages);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      role: "user",
+      content: "全新的功能或页面",
+    });
+  });
+
   it("不应包含 choices 等前端特有字段", () => {
     const messages: ChatMessage[] = [
       {

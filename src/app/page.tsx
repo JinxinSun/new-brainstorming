@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useChat } from "@/hooks/useChat";
 import { ProgressBar } from "@/components/layout/ProgressBar";
 import { ChatPanel } from "@/components/chat/ChatPanel";
@@ -9,14 +8,6 @@ import type { Choice } from "@/types";
 
 export default function Home() {
   const { state, sendMessage } = useChat();
-  const initialized = useRef(false);
-
-  // 页面加载时触发 AI 开场消息
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-    sendMessage("你好");
-  }, [sendMessage]);
 
   const handleChoiceSelect = (choice: Choice) => {
     sendMessage(choice.label);
