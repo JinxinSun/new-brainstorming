@@ -4,7 +4,7 @@
 （无进行中任务）
 
 ## 最近完成
-- **2026-04-16** 准备把当前项目状态同步到远程仓库
+- **2026-04-16** 已把当前项目状态同步到远程仓库（commit `e12096c`）
   - 纳入跨会话协议文件：`AGENTS.md`、`.claude/STATUS.md`
   - 纳入 UX 验证脚本：`test-ux.mjs`（运行前需本地 dev server 在 `http://localhost:3000`）
   - 推送前校验：`npx vitest run` 34/34 通过；`npx tsc --noEmit` 通过；`npm run build` 通过；`npm run lint` 通过但保留 2 个既有 `<img>` warning
@@ -44,7 +44,7 @@
 - **2026-04-16** 完成 MVP 首版（commit `142a748`）
 
 ## 下一步
-1. 当前代码已准备同步远程。同步后继续在 http://localhost:3000 浏览器手动验证新 prompt 效果。重点看：
+1. 当前代码已同步到远程仓库。继续在 http://localhost:3000 浏览器手动验证新 prompt 效果。重点看：
    - 前 1-3 轮 AI 是否不再每轮推选项
    - AI 追问时是否复用用户原词（员工/请假 而非 用户/流程）
    - stage 1-2 是否不出原型
