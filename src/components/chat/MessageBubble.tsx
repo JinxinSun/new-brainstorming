@@ -12,6 +12,15 @@ interface MessageBubbleProps {
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === "user";
 
+  if (
+    !isUser &&
+    !message.isStreaming &&
+    message.content.trim() === "" &&
+    !message.imageUrl
+  ) {
+    return null;
+  }
+
   return (
     <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser && (

@@ -305,6 +305,63 @@ describe("chatReducer", () => {
 
       expect(next.currentStage).toBe("clarify_requirements");
     });
+
+    it("空 content + choices 时应丢弃 choices（防止空气泡 + 菜单）", () => {
+      const state: ChatState = {
+        ...initialState,
+        isLoading: true,
+        messages: [
+          {
+            id: "a1",
+            role: "assistant",
+            content: "",
+            isStreaming: true,
+            timestamp: Date.now(),
+          },
+        ],
+      };
+
+      const next = chatReducer(state, {
+        type: "FINISH_ASSISTANT_MESSAGE",
+        id: "a1",
+        toolArgs: {
+          stage: "understand_background",
+          choices: [
+            { id: "new", label: "全新功能" },
+            { id: "improve", label: "改造现有功能" },
+          ],
+        },
+      });
+
+      expect(next.messages[0].choices).toBeUndefined();
+      expect(next.messages[0].isStreaming).toBe(false);
+    });
+
+    it("content 仅为空白字符时应丢弃 choices", () => {
+      const state: ChatState = {
+        ...initialState,
+        isLoading: true,
+        messages: [
+          {
+            id: "a1",
+            role: "assistant",
+            content: "   \n\t  ",
+            isStreaming: true,
+            timestamp: Date.now(),
+          },
+        ],
+      };
+
+      const next = chatReducer(state, {
+        type: "FINISH_ASSISTANT_MESSAGE",
+        id: "a1",
+        toolArgs: {
+          choices: [{ id: "x", label: "X" }],
+        },
+      });
+
+      expect(next.messages[0].choices).toBeUndefined();
+    });
   });
 
   describe("SET_ERROR / CLEAR_ERROR", () => {

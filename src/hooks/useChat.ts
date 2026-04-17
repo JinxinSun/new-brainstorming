@@ -34,6 +34,15 @@ function isValidPrototypeHtml(html: string | undefined): html is string {
   return s.startsWith("<!doctype") || s.startsWith("<html");
 }
 
+// choices 只在 AI 文字非空时有意义；空文字+choices 会渲染成"空气泡+菜单"
+function isRenderableChoices(
+  choices: UpdateInterfaceArgs["choices"],
+  content: string,
+): choices is NonNullable<UpdateInterfaceArgs["choices"]> {
+  if (!choices || choices.length === 0) return false;
+  return content.trim().length > 0;
+}
+
 // ─── Actions ──────────────────────────────────────────────
 
 type Action =
@@ -99,11 +108,27 @@ export function chatReducer(state: ChatState, action: Action): ChatState {
       return {
         ...state,
         isLoading: false,
-        messages: state.messages.map((m) =>
-          m.id === action.id
-            ? { ...m, isStreaming: false, choices: toolArgs.choices }
-            : m,
-        ),
+        messages: state.messages.map((m) => {
+          if (m.id !== action.id) return m;
+          const renderable = isRenderableChoices(toolArgs.choices, m.content);
+          if (m.content.trim() === "") {
+            if (toolArgs.choices && toolArgs.choices.length > 0) {
+              console.warn(
+                "[brainstorm] fallback: drop choices on empty assistant content",
+              );
+            }
+            if (isValidPrototypeHtml(toolArgs.prototype_html)) {
+              console.warn(
+                "[brainstorm] fallback: prototype updated without assistant text",
+              );
+            }
+          }
+          return {
+            ...m,
+            isStreaming: false,
+            choices: renderable ? toolArgs.choices : undefined,
+          };
+        }),
         currentStage: toolArgs.stage ?? state.currentStage,
         prototypeHtml: isValidPrototypeHtml(toolArgs.prototype_html)
           ? toolArgs.prototype_html

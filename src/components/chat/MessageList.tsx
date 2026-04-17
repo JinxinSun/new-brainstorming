@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { ChatMessage, Choice } from "@/types";
 import { MessageBubble } from "./MessageBubble";
-import { ChoiceCards } from "./ChoiceCards";
+import { QuestionCard } from "./QuestionCard";
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -27,19 +27,17 @@ export function MessageList({
       {messages.map((msg, index) => {
         const isLastAssistant =
           msg.role === "assistant" && index === messages.length - 1;
-        const hasChoices = msg.choices && msg.choices.length > 0;
-        // 只在最新一条 AI 消息上渲染 choices，避免历史选项堆积
-        const showChoices = hasChoices && isLastAssistant;
 
         return (
-          <div key={msg.id} className="space-y-3">
-            <MessageBubble message={msg} />
-            {showChoices && (
-              <ChoiceCards
-                choices={msg.choices!}
-                onSelect={onChoiceSelect}
+          <div key={msg.id}>
+            {isLastAssistant ? (
+              <QuestionCard
+                message={msg}
+                onChoiceSelect={onChoiceSelect}
                 disabled={isLoading}
               />
+            ) : (
+              <MessageBubble message={msg} />
             )}
           </div>
         );
