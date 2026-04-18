@@ -31,6 +31,7 @@ export interface Choice {
 }
 
 export interface UpdateInterfaceArgs {
+  reply_text?: string;
   stage?: ConversationStage;
   choices?: Choice[];
   prototype_html?: string;

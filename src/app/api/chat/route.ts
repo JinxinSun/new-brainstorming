@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
           name: string;
           argumentsJson: string;
         } | null = null;
+        let hasStreamedText = false;
 
         for await (const chunk of response) {
           const choice = chunk.choices[0];
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
 
           // 文本增量
           if (delta?.content) {
+            hasStreamedText = true;
             send({ type: "text_delta", delta: delta.content });
           }
 
@@ -75,6 +77,14 @@ export async function POST(req: NextRequest) {
           if (choice.finish_reason === "tool_calls" && toolCallAccumulator) {
             try {
               const args = JSON.parse(toolCallAccumulator.argumentsJson);
+              // 兜底：若本轮 AI 只调了工具没输出顶层文字，把 reply_text 注入为 text_delta
+              if (
+                !hasStreamedText &&
+                typeof args.reply_text === "string" &&
+                args.reply_text.trim().length > 0
+              ) {
+                send({ type: "text_delta", delta: args.reply_text });
+              }
               send({ type: "tool_call_done", args });
             } catch {
               send({ type: "error", message: "tool_call_parse_error" });

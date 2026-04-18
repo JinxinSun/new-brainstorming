@@ -95,14 +95,14 @@ describe("buildApiMessages", () => {
       {
         id: "initial-welcome",
         role: "assistant",
-        content: "欢迎！请问您想要做的是？",
+        content: "欢迎！我是需求探索师。",
         isInitial: true,
         timestamp: 0,
       },
       {
         id: "u1",
         role: "user",
-        content: "全新的功能或页面",
+        content: "我想做一个请假系统",
         timestamp: Date.now(),
       },
     ];
@@ -112,7 +112,7 @@ describe("buildApiMessages", () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
       role: "user",
-      content: "全新的功能或页面",
+      content: "我想做一个请假系统",
     });
   });
 

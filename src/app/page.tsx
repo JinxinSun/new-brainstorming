@@ -30,7 +30,10 @@ export default function Home() {
 
         {/* 右侧预览面板 ~65% */}
         <div className="flex-1">
-          <PreviewPanel prototypeHtml={state.prototypeHtml} />
+          <PreviewPanel
+            prototypeHtml={state.prototypeHtml}
+            requirementsSummary={state.requirementsSummary}
+          />
         </div>
       </div>
 

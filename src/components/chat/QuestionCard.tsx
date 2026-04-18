@@ -22,6 +22,11 @@ export function QuestionCard({
   // welcome 开场（isInitial）不显 tag / 占位，避免破坏引导语气
   const showMeta = hasChoices && !message.isInitial;
 
+  // 对称 MessageBubble：空内容 + 无选项 + 非流式时不渲染空卡片
+  if (!hasChoices && !message.isStreaming && message.content.trim() === "") {
+    return null;
+  }
+
   return (
     <div className="flex gap-3 justify-start">
       <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium shrink-0">

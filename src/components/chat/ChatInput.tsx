@@ -102,7 +102,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           onInput={handleTextareaInput}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          placeholder="输入你的想法..."
+          placeholder="一句话描述你想做的功能、流程或问题..."
           rows={1}
           className="flex-1 resize-none rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 disabled:bg-gray-50 disabled:text-gray-400"
         />
